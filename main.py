@@ -17,6 +17,11 @@ def cli():
             if len(cli_input_list) > 0:
                 if cli_input_list[0] == 'q':
                     break
+                elif cli_input_list[0] == 'tx':
+                    if len(cli_input_list) == 2:
+                        serialcomm.tx_msg(cli_input_list[1])
+                    else:
+                        continue
             else:
                 pass
         except KeyboardInterrupt:
