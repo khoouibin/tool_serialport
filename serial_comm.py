@@ -20,11 +20,14 @@ class Serial_Receiver(threading.Thread):
             # print('thread_num:',self.num)
             data = self.sercomm.read_all()
             if data:
-                #rec_str=data.decode('utf-8')
-                rec_str=data.hex()
+                rec_str=data.decode('utf-8')
+                hex_list = []
+                for n in data:
+                    hex_list.append(hex(n))
+ 
                 rec_log = 'rx[%d]: %s'%(len(rec_str),rec_str)
-                print(rec_log)
-                print('>> ')
+                print(rec_log,hex_list)
+
             self.num += 1
             time.sleep(0.3)
             if self.quit:
@@ -41,19 +44,14 @@ class SerialComm():
         super(SerialComm, self).__init__()
 
     def init_parameter(self, port=None, baudrate=9600):
-        #_command = "sudo chmod 666 " + port
-        #subprocess.Popen(_command, shell=True, stderr=subprocess.STDOUT)
         self.serial = serial.Serial(port=port, baudrate=baudrate,timeout=0)
-        #print(self.serial)
         self.serial_rx = Serial_Receiver(self.serial)
         self.serial_rx.start()
 
     def tx_msg(self,msg):
-        print('msg:',msg)
         msg_bytes = bytes(msg,'ascii')
-        
-        print('msg_bytes:',msg_bytes)
-        print(len(msg_bytes))
+        tx_log = 'Send[%d]: %s'%(len(msg_bytes),msg_bytes)
+        print(tx_log)
         self.serial.write(msg_bytes)
         
     def exit(self):

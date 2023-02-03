@@ -8,6 +8,27 @@ from serial_comm import SerialComm
 serialcomm = SerialComm()
 
 
+def cli_help():
+    help_doc = ''
+    help_doc += 'q : quit program'+os.linesep
+    help_doc += 'tx: send data to serial port'+os.linesep
+    help_doc += '    (1) tx str xxxxx'+os.linesep
+    help_doc += '    (2) tx hex 12 34 56 78'+os.linesep
+    print(help_doc)
+
+def int_hex_conv(data):
+    print('int_hex_conv:',len(data))
+    try:
+        hex_nums = []
+        for num in data:
+            dec_num = int(num,16)
+            hex_num = hex(dec_num)
+            hex_nums.append(hex_num)
+    except ValueError:
+        print("Please input only hexadecimal value...")
+        
+    print('hex_nums:',hex_nums)
+    
 def cli():
     while True:
         try:
@@ -17,16 +38,28 @@ def cli():
             if len(cli_input_list) > 0:
                 if cli_input_list[0] == 'q':
                     break
+                elif cli_input_list[0] == 'help':
+                    cli_help()
                 elif cli_input_list[0] == 'tx':
-                    if len(cli_input_list) == 2:
-                        serialcomm.tx_msg(cli_input_list[1])
-                    else:
+                    if len(cli_input_list) < 3:
                         continue
+                    else:
+                        if cli_input_list[1] == 'str':
+                            serialcomm.tx_msg(cli_input_list[2])
+                        elif cli_input_list[1] == 'hex':
+                            data_list = []
+                            for n in range(2, len(cli_input_list)):
+                                print('num[{}]={}'.format(n, cli_input_list[n]))
+                                data_list.append(cli_input_list[n])
+                            int_hex_conv(data_list)
+                        else:
+                            continue
             else:
                 pass
         except KeyboardInterrupt:
             print(colored('key interrupt occur !!!', 'red'))
             break
+
 
 def main():
     tty_device = '/dev/ttyUSB0'
@@ -53,7 +86,7 @@ def main():
 
     log = 'tty dev=%s, baudrate=%d' % (tty_device, i_baudrate)
     print(log)
-    serialcomm.init_parameter(tty_device,i_baudrate)
+    serialcomm.init_parameter(tty_device, i_baudrate)
     cli()
     serialcomm.exit()
     sys.exit(0)
