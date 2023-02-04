@@ -12,23 +12,11 @@ def cli_help():
     help_doc = ''
     help_doc += 'q : quit program'+os.linesep
     help_doc += 'tx: send data to serial port'+os.linesep
-    help_doc += '    (1) tx str xxxxx'+os.linesep
+    help_doc += '    (1) tx str xxxxx xxx'+os.linesep
     help_doc += '    (2) tx hex 12 34 56 78'+os.linesep
     print(help_doc)
 
-def int_hex_conv(data):
-    print('int_hex_conv:',len(data))
-    try:
-        hex_nums = []
-        for num in data:
-            dec_num = int(num,16)
-            hex_num = hex(dec_num)
-            hex_nums.append(hex_num)
-    except ValueError:
-        print("Please input only hexadecimal value...")
-        
-    print('hex_nums:',hex_nums)
-    
+
 def cli():
     while True:
         try:
@@ -45,13 +33,16 @@ def cli():
                         continue
                     else:
                         if cli_input_list[1] == 'str':
-                            serialcomm.tx_msg(cli_input_list[2])
+                            cli_str_split = cli_input.split("str ")
+                            if len(cli_str_split) == 2:
+                                serialcomm.tx_strmsg(cli_str_split[1])
+
                         elif cli_input_list[1] == 'hex':
-                            data_list = []
+                            str_nums = []
                             for n in range(2, len(cli_input_list)):
-                                print('num[{}]={}'.format(n, cli_input_list[n]))
-                                data_list.append(cli_input_list[n])
-                            int_hex_conv(data_list)
+                                str_nums.append(cli_input_list[n])
+
+                            serialcomm.tx_hexmsg(str_nums)
                         else:
                             continue
             else:
@@ -90,6 +81,7 @@ def main():
     cli()
     serialcomm.exit()
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()
