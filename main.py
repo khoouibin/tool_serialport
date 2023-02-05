@@ -43,8 +43,13 @@ def cli():
                                 str_nums.append(cli_input_list[n])
 
                             serialcomm.tx_hexmsg(str_nums)
-                        else:
-                            continue
+                        else:   
+                            continue 
+                        
+                elif cli_input_list[0] == 'set':
+                    if cli_input_list[1] == 'lc12s':
+                        serialcomm.tx_lc12s_settings()      
+
             else:
                 pass
         except KeyboardInterrupt:
