@@ -14,6 +14,7 @@ def cli_help():
     help_doc += 'tx: send data to serial port'+os.linesep
     help_doc += '    (1) tx str xxxxx xxx'+os.linesep
     help_doc += '    (2) tx hex 12 34 56 78'+os.linesep
+    help_doc += 'set lc12s -setting parameter for lc12s'
     print(help_doc)
 
 

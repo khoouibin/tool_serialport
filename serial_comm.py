@@ -25,7 +25,7 @@ class Serial_Receiver(threading.Thread):
                 # rec_str=data.decode('utf-8')
                 rx_hex = []
                 for n in data:
-                    rx_hex.append(hex(n))
+                    rx_hex.append( "{:02x}".format(n) )                
                 print('rx[{}]:{}'.format(len(rx_hex),rx_hex))
             self.num += 1
             time.sleep(0.3)
@@ -75,34 +75,39 @@ class SerialComm():
         settings = {
             'setting_1': 'aa',
             'setting_2': '5a',
-            'setting_3': '00',
-            'setting_4': '00',
-            'setting_5': '00',
-            'setting_6': '00',
-            'setting_7': '00',
-            'setting_8': '00',
-            'setting_9': '00',
-            'setting_10': '04',
+            'setting_3': '22',#self id-1
+            'setting_4': '33',#self id-0
+            'setting_5': '11',#net  id-1
+            'setting_6': '22',#net  id-0
+            'setting_7': '00',#nc
+            'setting_8': '00',#rf power
+            'setting_9': '00',#nc
+            'setting_10': '04',#baud 9600bps
             'setting_11': '00',
-            'setting_12': '0a',
-            'setting_13': '00',
-            'setting_14': '00',
-            'setting_15': '00',
-            'setting_16': '12',
+            'setting_12': '64',#rf channel
+            'setting_13': '00',#nc
+            'setting_14': '00',#nc
+            'setting_15': '00',#nc
+            'setting_16': '12',#lenght
             'setting_17': '00',
         }
 
-        int_list = []
+        setting_list = []
         for i in range(1, 18):
-            int_list.append(int(settings['setting_'+str(i)], 16))
+            setting_list.append(int(settings['setting_'+str(i)], 16))
         chksum = 0
-        for i in range(len(int_list)):
-            chksum += int_list[i]
+        for i in range(len(setting_list)):
+            chksum += setting_list[i]
         chksum &= 0x00ff
-        int_list.append(chksum)
-        byte_int_list = bytes(int_list)
-        print('tx[{}]:{}'.format(len(byte_int_list),byte_int_list))
-        self.tx_hex(byte_int_list)
+        setting_list.append(chksum)
+       
+        setting_hex = []
+        for i in setting_list:
+            setting_hex.append("{:02x}".format(i) )   
+        byte_setting_list = bytes(setting_list)
+        print('tx[{}]:{}'.format(len(setting_hex),setting_hex))
+        self.tx_hex(byte_setting_list)
+                
         # str_01='aa'
         # str_02='5a'
 
