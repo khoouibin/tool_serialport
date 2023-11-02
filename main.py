@@ -44,6 +44,14 @@ def cli():
                                 str_nums.append(cli_input_list[n])
 
                             serialcomm.tx_hexmsg(str_nums)
+
+                        elif cli_input_list[1] == 'modbus':
+                            str_nums = []
+                            for n in range(2, len(cli_input_list)):
+                                str_nums.append(cli_input_list[n])
+
+                            serialcomm.tx_hexmsg_crc16(str_nums)
+
                         else:   
                             continue 
                         
@@ -61,6 +69,7 @@ def cli():
 def main():
     tty_device = '/dev/ttyUSB0'
     i_baudrate = 9600
+    b_skip_serial_setting = False
     if len(sys.argv) > 1:
         argc = len(sys.argv)
         i = 0
@@ -79,11 +88,18 @@ def main():
                 else:
                     i_baudrate = int(next(enum_argv)[1])
                     i += 1
+            elif argv == '-sim':
+                b_skip_serial_setting = True
+                if index+1 == argc:
+                    break
+                else:
+                    i += 1
+
             i += 1
 
-    log = 'tty dev=%s, baudrate=%d' % (tty_device, i_baudrate)
+    log = 'tty dev=%s, baudrate=%d, sim=%d' % (tty_device, i_baudrate,b_skip_serial_setting)
     print(log)
-    serialcomm.init_parameter(tty_device, i_baudrate)
+    serialcomm.init_parameter(tty_device, i_baudrate,b_skip_serial_setting)
     cli()
     serialcomm.exit()
     sys.exit(0)

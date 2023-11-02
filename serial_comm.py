@@ -40,19 +40,25 @@ class SerialComm():
     def __init__(self):
         super(SerialComm, self).__init__()
 
-    def init_parameter(self, port=None, baudrate=9600):
-        self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=0)
-        self.serial_rx = Serial_Receiver(self.serial)
-        self.serial_rx.start()
+    def init_parameter(self, port=None, baudrate=9600,b_skip_init=False):
+        self.skip_init = b_skip_init
+        if self.skip_init == False:
+            self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=0)
+            self.serial_rx = Serial_Receiver(self.serial)
+            self.serial_rx.start()
 
     def tx_strmsg(self, msg):
         msg_bytes = bytes(msg, 'ascii')
         tx_log = 'tx[%d]: %s' % (len(msg_bytes), msg_bytes)
         print(tx_log)
-        self.serial.write(msg_bytes)
+        if self.skip_init == False:
+            self.serial.write(msg_bytes)
 
     def tx_hex(self, hex_num):
-        self.serial.write(hex_num)
+        tx_log = 'tx[%d]: %s' % (len(hex_num), hex_num)
+        print(tx_log)
+        if self.skip_init == False:
+            self.serial.write(hex_num)
 
     def tx_hexmsg(self, str_nums):
         status = True
@@ -68,6 +74,44 @@ class SerialComm():
             print(byte_val)
             self.tx_hex(byte_val)
 
+        except ValueError as e:
+            print(e)
+
+    def crc16_cal(self, int_nums):
+        crc = 0xffff
+        high_byte = 0
+        low_byte = 0
+
+        for int_num in int_nums:
+            crc_byte = int_num & 0x00ff
+            crc ^= crc_byte
+            for i in range(8):
+                if crc & 0x0001 != 0:
+                    crc >>= 1
+                    crc ^= 0xa001
+                else:
+                    crc >>= 1
+        high_byte = (crc >> 8) & 0x00ff
+        low_byte = crc & 0x00ff
+        return high_byte, low_byte
+
+    def tx_hexmsg_crc16(self, str_nums):
+        status = True
+        try:
+            _int = []
+            for str_num in str_nums:
+                print('str_num:', str_num)
+                _int.append(int(str_num, 16))
+
+            high_byte, low_byte = self.crc16_cal(_int)
+            _int.append(low_byte)
+            _int.append(high_byte)
+            for _i in _int:
+                if _i > 255:
+                    status = False
+                    break
+            byte_val = bytes(_int)
+            self.tx_hex(byte_val)
         except ValueError as e:
             print(e)
 
@@ -133,5 +177,6 @@ class SerialComm():
         # str_17='00'
 
     def exit(self):
-        self.serial_rx.exit()
+        if self.skip_init == False:
+            self.serial_rx.exit()
         print('serialcomm exit')
