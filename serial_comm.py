@@ -122,7 +122,7 @@ class Serial_Transmitter():
         try:
             _int = []
             for str_num in str_nums:
-                print('str_num:', str_num)
+                #print('str_num:', str_num)
                 _int.append(int(str_num, 16))
 
             high_byte, low_byte = self.crc16_cal(_int)

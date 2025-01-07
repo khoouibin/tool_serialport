@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import coloredlogs
 from datetime import datetime
 from termcolor import colored
 
@@ -37,10 +38,16 @@ class log_handler:
                 change_owner(self.log_dok_dir)
             self.logname_abs = os.path.join(self.log_dok_dir, self.logname)
             logging.basicConfig(
-                filename=self.logname_abs,
                 level=logging.INFO,
                 format="%(asctime)s-[%(levelname)s]-%(message)s",
+                handlers=[
+                    logging.FileHandler(self.logname_abs),
+                    logging.StreamHandler()
+                ]
             )
+            logger = logging.getLogger(__name__)
+            coloredlogs.install(level='DEBUG', logger=logger)
+
             logging.info("log started")
             logging.info("log dok dir:%s" % (self.log_dok_dir))
             logging.info("log file name:%s" % (self.logname_abs))
@@ -86,6 +93,4 @@ class log_handler:
             module = __name__
 
         msg = "%s - %s" % (module, message)
-        if print_terminal == True:
-            print(colored('{}'.format(msg), color))
-        logging.info(msg)
+        logging.warning(msg)
