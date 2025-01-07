@@ -3,9 +3,9 @@ import time
 import json
 import os
 from termcolor import colored
-from serial_comm import SerialComm
+from serial_comm import Serial_Transmitter
 
-serialcomm = SerialComm()
+serialcomm = Serial_Transmitter()
 
 
 def cli_help():
@@ -36,14 +36,14 @@ def cli():
                         if cli_input_list[1] == 'str':
                             cli_str_split = cli_input.split("str ")
                             if len(cli_str_split) == 2:
-                                serialcomm.tx_strmsg(cli_str_split[1])
+                                serialcomm.tx_str(cli_str_split[1])
 
                         elif cli_input_list[1] == 'hex':
-                            str_nums = []
+                            str_hexes = []
                             for n in range(2, len(cli_input_list)):
-                                str_nums.append(cli_input_list[n])
+                                str_hexes.append(cli_input_list[n])
 
-                            serialcomm.tx_hexmsg(str_nums)
+                            serialcomm.tx_hexmsg(str_hexes)
 
                         elif cli_input_list[1] == 'modbus':
                             str_nums = []
@@ -52,12 +52,12 @@ def cli():
 
                             serialcomm.tx_hexmsg_crc16(str_nums)
 
-                        else:   
-                            continue 
-                        
+                        else:
+                            continue
+
                 elif cli_input_list[0] == 'set':
                     if cli_input_list[1] == 'lc12s':
-                        serialcomm.tx_lc12s_settings()      
+                        serialcomm.tx_lc12s_settings()
 
             else:
                 pass
@@ -97,9 +97,10 @@ def main():
 
             i += 1
 
-    log = 'tty dev=%s, baudrate=%d, sim=%d' % (tty_device, i_baudrate,b_skip_serial_setting)
+    log = 'tty dev=%s, baudrate=%d, sim=%d' % (
+        tty_device, i_baudrate, b_skip_serial_setting)
     print(log)
-    serialcomm.init_parameter(tty_device, i_baudrate,b_skip_serial_setting)
+    serialcomm.init_parameter(tty_device, i_baudrate, b_skip_serial_setting)
     cli()
     serialcomm.exit()
     sys.exit(0)
