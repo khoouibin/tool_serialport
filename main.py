@@ -4,8 +4,8 @@ import json
 import os
 from termcolor import colored
 from serial_comm import Serial_Transmitter
-
-serialcomm = Serial_Transmitter()
+import serial.tools.list_ports
+# serialcomm = Serial_Transmitter()
 
 
 def cli_help():
@@ -18,7 +18,7 @@ def cli_help():
     print(help_doc)
 
 
-def cli():
+def cli(serialcomm):
     while True:
         try:
             cli_input = input(">> ")
@@ -67,42 +67,40 @@ def cli():
 
 
 def main():
+    serial_ports = []
+    for port in serial.tools.list_ports.comports():
+        port_info = {'device': port.device, 'name': port.name}
+        serial_ports.append(port_info)
+
     tty_device = '/dev/ttyUSB0'
-    i_baudrate = 9600
+    i_baudrate = 781250
     b_skip_serial_setting = False
-    if len(sys.argv) > 1:
-        argc = len(sys.argv)
-        i = 0
-        enum_argv = enumerate(iter(sys.argv))
-        while i < argc:
-            index, argv = next(enum_argv)
-            if argv == '-tty':
-                if index+1 == argc:
-                    break
-                else:
-                    tty_device = next(enum_argv)[1]
-                    i += 1
-            elif argv == '-baud':
-                if index+1 == argc:
-                    break
-                else:
-                    i_baudrate = int(next(enum_argv)[1])
-                    i += 1
-            elif argv == '-sim':
-                b_skip_serial_setting = True
-                if index+1 == argc:
-                    break
-                else:
-                    i += 1
 
-            i += 1
+    for port in serial_ports:
+        print('device:', port['device'])
+        cmd = "chmod 666 %s" % (port['device'])
+        p = os.system('echo %s|sudo -S %s' % ('orisol', cmd))
 
-    log = 'tty dev=%s, baudrate=%d, sim=%d' % (
-        tty_device, i_baudrate, b_skip_serial_setting)
-    print(log)
-    serialcomm.init_parameter(tty_device, i_baudrate, b_skip_serial_setting)
-    cli()
-    serialcomm.exit()
+    if len(serial_ports) > 0:
+        for i, port in enumerate(serial_ports):
+            if i == 0:
+                pri_serial = Serial_Transmitter(port['name'])
+                pri_serial.init_parameter(
+                    port['device'], i_baudrate, b_skip_serial_setting)
+            else:
+                sec_serial = Serial_Transmitter(port['name'])
+                sec_serial.init_parameter(
+                    port['device'], i_baudrate, b_skip_serial_setting)
+                break
+
+        cli(pri_serial)
+        for i, port in enumerate(serial_ports):
+            if i == 0:
+                pri_serial.exit()
+            else:
+                sec_serial.exit()
+                break
+
     sys.exit(0)
 
 

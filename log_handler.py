@@ -93,4 +93,4 @@ class log_handler:
             module = __name__
 
         msg = "%s - %s" % (module, message)
-        logging.warning(msg)
+        logging.debug(msg)

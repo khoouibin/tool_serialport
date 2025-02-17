@@ -17,12 +17,13 @@ ser_log_handler.init_parameter(os.getcwd())
 
 
 class Serial_Receiver(threading.Thread):
-    def __init__(self, sercomm):
+    def __init__(self, sercomm, name):
         threading.Thread.__init__(self)
         self.num = 0
         self.quit = False
         self.sercomm = sercomm
-        self.sertx = Serial_Transmitter()
+        # self.sertx = Serial_Transmitter()
+        self.name = name
 
     def run(self):
         while True:
@@ -34,10 +35,10 @@ class Serial_Receiver(threading.Thread):
                     rx_hex.append("{:02x}".format(rx_byte))
                 log = 'rx[%d]:%s' % (len(rx_hex), rx_hex)
                 ser_log_handler.log_message(
-                    module='rx_log', color='magenta', message='%s' % (log))
+                    module=self.name, color='magenta', message='%s' % (log))
 
             self.num += 1
-            time.sleep(0.3)
+            time.sleep(0.05)
             if self.quit:
                 break
 
@@ -46,8 +47,9 @@ class Serial_Receiver(threading.Thread):
 
 
 class Serial_Transmitter():
-    def __init__(self):
+    def __init__(self, name):
         super(Serial_Transmitter, self).__init__()
+        self.name = name
 
     def init_parameter(self, port=None, baudrate=9600, b_skip_init=False):
         self.skip_init = b_skip_init
@@ -57,7 +59,7 @@ class Serial_Transmitter():
         if self.skip_init == False:
             self.serial = serial.Serial(
                 port=port, baudrate=baudrate, timeout=0)
-            self.serial_rx = Serial_Receiver(self.serial)
+            self.serial_rx = Serial_Receiver(self.serial, self.name)
             self.serial_rx.start()
 
     def log_hexmsg(self, hex_bytes, print_log=False):
@@ -71,7 +73,7 @@ class Serial_Transmitter():
                 _str = ''
         log = 'tx[%d]:%s' % (len(hexlist), hexlist)
         ser_log_handler.log_message(
-            module='tx_log', color='cyan', message='%s' % (log))
+            module=self.name, color='red', message='%s' % (log))
 
     def tx_str(self, str_msg):
         msg_bytes = bytes(str_msg, 'ascii')
@@ -97,7 +99,7 @@ class Serial_Transmitter():
 
         except ValueError as e:
             ser_log_handler.log_message(
-                module='tx_log', color='red', message='%s' % (e))
+                module=self.name, color='red', message='%s' % (e))
 
     def crc16_cal(self, int_nums):
         crc = 0xffff
@@ -122,7 +124,7 @@ class Serial_Transmitter():
         try:
             _int = []
             for str_num in str_nums:
-                #print('str_num:', str_num)
+                # print('str_num:', str_num)
                 _int.append(int(str_num, 16))
 
             high_byte, low_byte = self.crc16_cal(_int)
