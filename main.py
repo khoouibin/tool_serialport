@@ -69,6 +69,9 @@ def cli(serialcomm):
 def main():
     serial_ports = []
     for port in serial.tools.list_ports.comports():
+        log = 'description:%s, manufacturer:%s, product:%s' % (
+            port.description, port.manufacturer, port.product)
+        print(log)
         port_info = {'device': port.device, 'name': port.name}
         serial_ports.append(port_info)
 
